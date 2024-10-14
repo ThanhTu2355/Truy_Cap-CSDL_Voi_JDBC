@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +20,7 @@ import my.common.DatabaseUtil;
  *
  * @author PC
  */
-public class SaveServlet extends HttpServlet {
+public class ViewServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -34,42 +35,56 @@ public class SaveServlet extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
             //b1. Lay gia tri tham so tu nguoi dung
-            String uname = request.getParameter("uname");
-            String upass = request.getParameter("upass");
-            String email = request.getParameter("email");
-            String country = request.getParameter("country");
-
             //b2. Xu ly yeu cau 
             Connection conn = null;
             PreparedStatement ps = null;
+            ResultSet rs = null;
+            String data= "";
             try {
-                //1. Nap driver
-                //2. Thiet lap ket noi CSDL
+                //1. Nap driver                
+                //2. Thiet lap ket noi CSDL      
                 conn = DatabaseUtil.getConnection();
                 //3. Tao doi tuong thi hanh truy van
-                ps = conn.prepareStatement("insert into users(name, password, email, country) values(?,?,?,?)");
-                //truyen gia tri
-                ps.setString(1, uname);
-                ps.setString(2, upass);
-                ps.setString(3, email);
-                ps.setString(4, country);
+                ps = conn.prepareStatement("select * from users");
                 //4. Thi hanh truy van
-                int kq = ps.executeUpdate();
+                rs = ps.executeQuery();
                 //5. Xu ly ket qua tra ve
-                if (kq > 0) {
-                    out.println("<h2>Them user thanh cong</h2>");
-                } else {
-                    out.println("<h2>Them user that bai</h2>");
+                data += "<table border=\"1\">";
+                data += "<tr><th>Id</th><th>Name</th><th>Password</th><th>Email</th><th>Country</th><th>Edit</th><th>Delete</th></tr>";
+                while (rs.next()) {
+                    data += "<tr>";
+                    data += "<td>" + rs.getInt(1) + "</td>";
+                    data += "<td>" + rs.getString(2) + "</td>";
+                    data += "<td>" + rs.getString(3) + "</td>";
+                    data += "<td>" + rs.getString(4) + "</td>";
+                    data += "<td>" + rs.getString(5) + "</td>";
+                    data += "<td><a href=EditServlet?id=" + rs.getInt(1) + ">Edit</a></td>";
+                    data += "<td><a href=DeleteServlet?id=" + rs.getInt(1) +  " onclick=\"return confirm('Are you sure to delete')\" >Delete</a></td>";
+                    data += "</tr>";
                 }
                 //6. Dong ket noi
                 conn.close();
             } catch (Exception e) {
                 System.out.println("Loi: " + e.toString());
-                out.println("<h2>Them user that bai</h2>");
+                out.println("<h2>View user that bai</h2>");
             }
-            //chen noi dung cua trang
-            request.getRequestDispatcher("index.html").include(request, response);
+            
+            
+            
+            
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet ViewServlet</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<a href=index.html>Add new user</a>");
+            out.println("<h1>User List</h1>");
+            out.println(data);
+            out.println("</body>");
+            out.println("</html>");
         }
     }
 

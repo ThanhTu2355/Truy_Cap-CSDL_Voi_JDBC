@@ -7,8 +7,8 @@ package my.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +19,7 @@ import my.common.DatabaseUtil;
  *
  * @author PC
  */
-public class SaveServlet extends HttpServlet {
+public class DeleteServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -34,42 +34,44 @@ public class SaveServlet extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            //b1. Lay gia tri tham so tu nguoi dung
-            String uname = request.getParameter("uname");
-            String upass = request.getParameter("upass");
-            String email = request.getParameter("email");
-            String country = request.getParameter("country");
-
-            //b2. Xu ly yeu cau 
+            //1. Lay tham so
+            String id = request.getParameter("id");
+            /* TODO output your page here. You may use following sample code. */
             Connection conn = null;
             PreparedStatement ps = null;
             try {
-                //1. Nap driver
-                //2. Thiet lap ket noi CSDL
+                //1. Nap driver                
+                //2. Thiet lap ket noi CSDL      
                 conn = DatabaseUtil.getConnection();
                 //3. Tao doi tuong thi hanh truy van
-                ps = conn.prepareStatement("insert into users(name, password, email, country) values(?,?,?,?)");
-                //truyen gia tri
-                ps.setString(1, uname);
-                ps.setString(2, upass);
-                ps.setString(3, email);
-                ps.setString(4, country);
+                ps = conn.prepareStatement("delete from users where id=" + id);
+                //ps.setInt(1, Integer.parseInt(id));
                 //4. Thi hanh truy van
                 int kq = ps.executeUpdate();
                 //5. Xu ly ket qua tra ve
                 if (kq > 0) {
-                    out.println("<h2>Them user thanh cong</h2>");
+                    out.println("<h2>Xoa user thanh cong</h2>");
                 } else {
-                    out.println("<h2>Them user that bai</h2>");
+                    out.println("<h2>Xoa user that bai</h2>");
                 }
                 //6. Dong ket noi
                 conn.close();
             } catch (Exception e) {
                 System.out.println("Loi: " + e.toString());
-                out.println("<h2>Them user that bai</h2>");
+                out.println("<h2>Xoa user that bai</h2>");
             }
             //chen noi dung cua trang
-            request.getRequestDispatcher("index.html").include(request, response);
+            request.getRequestDispatcher("ViewServlet").include(request, response);
+            
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet DeleteServlet</title>");            
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Servlet DeleteServlet at " + request.getContextPath() + "</h1>");
+            out.println("</body>");
+            out.println("</html>");
         }
     }
 
